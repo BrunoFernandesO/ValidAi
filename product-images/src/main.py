@@ -35,18 +35,19 @@ for file in os.listdir(IMAGE_DIR):
 results = []
 
 for reference in product_references:
-    status = "Image invalid or not found"
     for archive in os.listdir(IMAGE_DIR):
-
-
 
         if reference in archive:
             path = os.path.join(IMAGE_DIR, archive)
-            if validate_image(path, MAX_IMAGE_SIZE_BYTES, EXPECTED_DIMENSIONS):
-                status = "Valid image"
-                print(f"DEBUG | {file} | size={size_kb:.2f}kb | res={width}x{height} | status={status}")
-                break
-    results.append({"Referência": reference, "Status": status})
+
+            errors = validate_image(path, MAX_IMAGE_SIZE_BYTES, EXPECTED_DIMENSIONS)
+
+            if not errors:
+                status = "Imagem válida"
+            else:
+                status = errors
+        break
+    results.append({"Referencia": reference, "Status": status})
 
 # Print results
 import pandas as pd
