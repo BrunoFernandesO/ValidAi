@@ -20,7 +20,7 @@ EXPECTED_DIMENSIONS = (1024, 768)  # width, height
 product_references = read_spreadsheet(SPREADSHEET_PATH, column="Referencia")
 
 for file in os.listdir(IMAGE_DIR):
-    if not file.lower().endswith((".jpg", ".jpeg", ".png")):
+    if not file.lower().endswith((".jpg")):
         continue
 
     path = os.path.join(IMAGE_DIR, file)
