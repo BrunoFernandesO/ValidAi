@@ -1,3 +1,5 @@
+import Upload from "../components/Upload";
+
 export default function Home() {
   return (
     <div className="isolate h-full min-h-screen w-full min-w-screen bg-[#121212] font-inter">
@@ -13,7 +15,7 @@ export default function Home() {
           className="relative left-1/2 -z-10 aspect-1155/678 w-144.5 max-w-none -translate-x-1/2 rotate-30 bg-linear-to-tr from-[#0b1b4d] to-[#9089fc] opacity-20 sm:left-[calc(50%-40rem)] sm:w-288.75"
         />
       </div>
-
+          <Upload />
     </div>
   );
 }

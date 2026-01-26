@@ -2,6 +2,5 @@ pandas
 fastapi
 uvicorn
 python-multipart
-pidantic
 pillow
 openpyxl
