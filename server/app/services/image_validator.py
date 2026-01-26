@@ -48,11 +48,10 @@ def validate_image_service(uploaded_file: UploadFile):
     # Validate file size
     file_size = os.path.getsize(file_path)
     if file_size > MAX_IMAGE_SIZE_BYTES:
-        file_size = file_size / 1024 / 1024
         checks.append({
             "name": "Tamanho do arquivo",
             "status": "error",
-            "value": str(f"{file_size:.2f}") + " mb",
+            "value": str(f"{file_size / 1024 / 1024:.2f}") + " mb",
             "errors": [{
                 "code": "file_too_large",
                 "message": [f"O tamanho do arquivo excede o limite de {MAX_IMAGE_SIZE_BYTES / 1024 / 1024} mb."]
@@ -62,7 +61,7 @@ def validate_image_service(uploaded_file: UploadFile):
         checks.append({
             "name": "Tamanho do arquivo",
             "status": "ok",
-            "value": str(f"{file_size:.2f}") + " mb",
+            "value": str(f"{file_size / 1024 / 1024:.2f}") + " mb",
             "errors": None
         })
 
