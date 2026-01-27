@@ -12,6 +12,13 @@ class ValidationCheck(BaseModel):
     errors: Optional[List[ValidationError]] = None
 
 class ValidationResult(BaseModel):
+    filename: str
     approved: bool
     summary: str
     checks: List[ValidationCheck]
+
+class ValidationResponse(BaseModel):
+    total: int
+    approved: int
+    failed: int
+    results: List[ValidationResult]

@@ -5,11 +5,8 @@ export default function ResultsList({ results }) {
     return <p>Nenhum resultado disponível.</p>;
   }
 
-  const { checks } = results;
-
   return (
     <div className="overflow-x-auto">
-      {results.summary}
       <table className="w-full h-full text-sm text-left border-collapse overflow-hidden text-gray-500 dark-text-gray-400">
         <thead className="text-sm text-black uppercase dark:text-gray-300 bg-gray-50 dark:bg-gray-600/65 h-12">
           <tr>
@@ -34,10 +31,11 @@ export default function ResultsList({ results }) {
           </tr>
         </thead>
         <tbody>
-          <tr className="border-b dark:border-gray-700 border-gray-200">
+          {results?.results?.map((image, index) => (
+          <tr key={index} className="border-b dark:border-gray-700 border-gray-200">
             <td scope="row" className="px-6 h-18">
               <p className="text-white text-base font-medium text-[0.95rem]">
-                {results.approved ? (
+                {image.approved ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill=""
@@ -76,12 +74,11 @@ export default function ResultsList({ results }) {
                 alt=""
                 className="w-8 rounded-sm"
               />
-              <p className="text-gray-400 font-medium text-[0.8rem] ">{name}</p>
+              <p className="text-gray-400 font-medium text-[0.8rem] ">{image.filename}</p>
             </td>
 
-            {Array.isArray(checks) &&
-              checks.map((check, index) => (
-                <React.Fragment key={index}>
+            {image.checks.map((check, idx) => (
+                <React.Fragment key={idx}>
                   <td className="px-6 py-3 font-normal text-base text-gray-900 dark:text-gray-200">
                     {check.value}
                   </td>
@@ -98,13 +95,14 @@ export default function ResultsList({ results }) {
                       ))
                     ) : (
                       <span className="px-6 py-3 font-normal text-base text-gray-200">
-                        Nenhum erro encontrado.
+                        OK.
                       </span>
                     )}
                   </td>
                 </React.Fragment>
               ))}
           </tr>
+          ))}
         </tbody>
       </table>
     </div>

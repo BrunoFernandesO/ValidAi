@@ -1,10 +1,12 @@
 import axios from "axios";
 
-export async function validateImage(file, setProgress, setLoading) {
+export async function validateImage(files, setProgress) {
     const formData = new FormData();
-    formData.append("file", file);
 
-    setLoading(true);
+    Array.from(files).forEach(file => {
+        formData.append("files", file);
+    })
+
     setProgress(0);
 
     try {
@@ -12,9 +14,6 @@ export async function validateImage(file, setProgress, setLoading) {
             "http://localhost:8000/api/validate",
             formData,
             {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
                 onUploadProgress: (event) => {
                     if (!event.total) return;
 
@@ -26,11 +25,9 @@ export async function validateImage(file, setProgress, setLoading) {
                 }
             }
         )
-    return response.data;
+        return response.data;
     } catch (error) {
         console.error("validateImage error: ", error);
         throw error;
-    } finally {
-        setLoading(false);
     }
 }

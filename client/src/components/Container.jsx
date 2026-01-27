@@ -9,12 +9,18 @@ export default function Container() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const handleSubmit = async (file) => {
+  const handleSubmit = async (files) => {
+  console.log("handleSubmit files:", files);
+  console.log("isArray:", Array.isArray(files));
+  console.log("length:", files?.length);
+
+    if (loading) return;
+
     setLoading(true);
     setResult(null);
 
     try {
-      const data = await validateImage(file, setProgress, setLoading);
+      const data = await validateImage(files, setProgress, setLoading);
       setResult(data);
     } catch (error) {
       console.error("handleSubmit error: ", error);

@@ -3,11 +3,11 @@ import { useDropzone } from "react-dropzone";
 export default function Upload({ onUpload, loading }) {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    maxFiles: 1,
+    multiple: true,
     
     onDrop: async (acceptedFiles) => {
       if (acceptedFiles.length > 0) {
-        await onUpload(acceptedFiles[0]);
+        await onUpload(acceptedFiles);
       }
     },
   });
