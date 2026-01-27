@@ -1,0 +1,10 @@
+export default function LoadingBar({ value }) {
+    return (
+        <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+                className="h-2 bg-green-400 rounded-full transition-all duration-300"
+                style={{width: `${value}`}}
+                ></div>
+        </div>
+    )
+}
