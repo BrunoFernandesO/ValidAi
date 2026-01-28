@@ -74,14 +74,6 @@ export default function ResultsList({ results }) {
         </thead>
         <tbody>
           {results?.results?.map((image, index) => (
-            <td className="flex h-full items-center gap-2 px-6 py-3">
-              <img
-                src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
-                alt=""
-                className="w-8 rounded-sm"
-              />
-              <p className="text-gray-400 font-medium text-[0.8rem] ">{image.filename}</p>
-            </td>
             <tr
               key={index}
               className="border-b dark:border-gray-700 border-gray-200"
@@ -119,6 +111,17 @@ export default function ResultsList({ results }) {
                       />
                     </svg>
                   )}
+                </p>
+              </td>
+              <td className="flex h-full items-center gap-2 px-6 py-3">
+                <img
+                  src={`http://localhost:8000${image.file_url}`}
+                  alt={image.filename}
+                  className="w-10 rounded-xs mr-3"
+                />
+
+                <p className="text-gray-300 font-normal text-base ">
+                  {image.filename}
                 </p>
               </td>
 

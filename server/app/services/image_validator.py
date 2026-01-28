@@ -1,12 +1,15 @@
 import os
 import shutil
+import re
 from pathlib import Path
 from fastapi import UploadFile
 from PIL import Image, ImageOps
+from app.shared.validation.rules import sanitize_filename
+
 
 # from app.shared.validation.rules import validate_rules
 
-UPLOAD_DIR = Path("server/data/uploads")
+UPLOAD_DIR = Path("data/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 def validate_image_service(uploaded_file: UploadFile):
@@ -21,10 +24,22 @@ def validate_image_service(uploaded_file: UploadFile):
     # Read product references from spreadsheet
     #product_references = read_spreadsheet(SPREADSHEET_PATH, column="Referencia")
 
-    # Save uploaded file to disk
-    file_path = UPLOAD_DIR / uploaded_file.filename
+    # Save uploaded file
+    safe_filename = sanitize_filename(uploaded_file.filename)
+    
+    print("Original filename:", uploaded_file.filename)
+    print("Safe filename:", safe_filename)
+    print("Type:", type(safe_filename))
+
+
+    file_path = UPLOAD_DIR / safe_filename
+    print("FilePath: ", file_path)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(uploaded_file.file, buffer)
+
+    file_url = f"/uploads/{safe_filename}"
+
+
 
     checks = []
 
@@ -94,24 +109,12 @@ def validate_image_service(uploaded_file: UploadFile):
     return {
         "approved": approved,
         "summary": "Imagem validada com sucesso" if approved else "Falha na validação da imagem",
+        "file_url": file_url,
         "checks": checks
     }
 
-
-   # results = []
 
     #for reference in product_references:
     #    for archive in os.listdir(IMAGE_DIR):
 #
  #           if reference in archive:
-#
-#
- #               if not errors:
-  #                  status = True
-   #             else:
-    #                status = False
-     #           break
-
-        #results.append({"Referencia": reference, "Status": status, "Erros": errors if errors != True else None})
-
-#return results

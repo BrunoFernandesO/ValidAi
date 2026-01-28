@@ -15,6 +15,7 @@ class ValidationResult(BaseModel):
     filename: str
     approved: bool
     summary: str
+    file_url: str
     checks: List[ValidationCheck]
 
 class ValidationResponse(BaseModel):

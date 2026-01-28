@@ -1,15 +1,17 @@
+import re
+from pathlib import Path
 from app.shared.image.metadata import get_size, get_dimensions
 
-def validate_rules(path, max_size_bytes, expected_dimensions):
-    size = get_size(path)
-    dimensions = get_dimensions(path)
 
-    if size < max_size_bytes and dimensions == expected_dimensions:
-        return True
-    else:
-        errors = []
-        if size >= max_size_bytes:
-            errors.append(f"Tamanho invalido: {size} bytes (maximo permitido: {max_size_bytes} bytes)")
-            if dimensions != expected_dimensions:
-                errors.append(f"Dimensoes invalidas: {dimensions} (esperado: {expected_dimensions})")
-        return errors
+def sanitize_filename(filename: str) -> str:
+    if not filename:
+        raise ValueError("Filename inválido")
+
+    name = Path(filename).stem
+    ext = Path(filename).suffix
+
+    name = name.lower()
+    name = re.sub(r"[^\w\-]", "_", name)  # remove espaces, #, etc
+    name = re.sub(r"_+", "_", name)
+
+    return f"{name}{ext}"
