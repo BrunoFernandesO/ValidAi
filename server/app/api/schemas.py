@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class ValidationError(BaseModel):
     code: str
-    message: List[str]
+    message: str
 
 class ValidationCheck(BaseModel):
     name: str
@@ -14,12 +14,10 @@ class ValidationCheck(BaseModel):
 class ValidationResult(BaseModel):
     filename: str
     approved: bool
+    stage: str
     summary: str
     file_url: str
     checks: List[ValidationCheck]
 
 class ValidationResponse(BaseModel):
-    total: int
-    approved: int
-    failed: int
     results: List[ValidationResult]

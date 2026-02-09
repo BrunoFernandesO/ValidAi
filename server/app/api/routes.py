@@ -9,25 +9,12 @@ router = APIRouter(prefix="/api", tags=["validation"])
 async def validate_image(files: List[UploadFile] = File(...)):
     results = []
 
-    approved_count = 0
-    failed_count = 0
-
     for file in files:
         result = validate_image_service(file)
-
-        if result["approved"]:
-            approved_count += 1
-        else:
-            failed_count += 1
 
         results.append({
             "filename": file.filename,
             **result
         })
-
-    return {
-        "total": len(files),
-        "approved": approved_count,
-        "failed": failed_count,
-        "results": results
-    }
+    
+    return {"results": results}

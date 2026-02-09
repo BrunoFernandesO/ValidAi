@@ -19,27 +19,19 @@ def validate_image_service(uploaded_file: UploadFile):
     # Configurations
     #SPREADSHEET_PATH = "data/spreadsheet/product_references.xlsx"
     MAX_IMAGE_SIZE_BYTES = 5242880  # 5 MB
-    EXPECTED_DIMENSIONS = (1024, 768)  # width, height
+    EXPECTED_DIMENSIONS = (1360, 2040)  # width, height
 
     # Read product references from spreadsheet
     #product_references = read_spreadsheet(SPREADSHEET_PATH, column="Referencia")
 
     # Save uploaded file
     safe_filename = sanitize_filename(uploaded_file.filename)
-    
-    print("Original filename:", uploaded_file.filename)
-    print("Safe filename:", safe_filename)
-    print("Type:", type(safe_filename))
-
-
     file_path = UPLOAD_DIR / safe_filename
-    print("FilePath: ", file_path)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(uploaded_file.file, buffer)
 
     file_url = f"/uploads/{safe_filename}"
-
-
+    
 
     checks = []
 
@@ -51,11 +43,11 @@ def validate_image_service(uploaded_file: UploadFile):
             "approved": False,
             "summary": "Formato inválido",
             "checks": [{
-            "name": "Formato do arquivo",
+            "name": "Formato",
             "status": "error",
             "errors": [{
                 "code": "invalid_format",
-                "message": [f"O formato do arquivo deve ser {EXPECTED_FORMATS}."]
+                "message": f"O formato do arquivo deve ser {EXPECTED_FORMATS}."
             }]
             }]
         }
@@ -64,17 +56,17 @@ def validate_image_service(uploaded_file: UploadFile):
     file_size = os.path.getsize(file_path)
     if file_size > MAX_IMAGE_SIZE_BYTES:
         checks.append({
-            "name": "Tamanho do arquivo",
+            "name": "Tamanho",
             "status": "error",
             "value": str(f"{file_size / 1024 / 1024:.2f}") + " mb",
             "errors": [{
                 "code": "file_too_large",
-                "message": [f"O tamanho do arquivo excede o limite de {MAX_IMAGE_SIZE_BYTES / 1024 / 1024} mb."]
+                "message": f"O tamanho do arquivo excede o limite de {MAX_IMAGE_SIZE_BYTES / 1024 / 1024} mb."
             }]
         })
     else:
         checks.append({
-            "name": "Tamanho do arquivo",
+            "name": "Tamanho",
             "status": "ok",
             "value": str(f"{file_size / 1024 / 1024:.2f}") + " mb",
             "errors": None
@@ -87,17 +79,17 @@ def validate_image_service(uploaded_file: UploadFile):
 
     if (width, height) != EXPECTED_DIMENSIONS:
         checks.append({
-            "name": "Dimensões da imagem",
+            "name": "Dimensões",
             "status": "error",
             "value": f"{width}x{height}",
             "errors": [{
                 "code": "invalid_dimensions",
-                "message": [f"As dimensões da imagem devem ser {EXPECTED_DIMENSIONS[0]}x{EXPECTED_DIMENSIONS[1]} pixels."]
+                "message": f"As dimensões da imagem devem ser {EXPECTED_DIMENSIONS[0]}x{EXPECTED_DIMENSIONS[1]} pixels."
             }]
         })
     else: 
         checks.append({
-            "name": "Dimensões da imagem",
+            "name": "Dimensões",
             "status": "ok",
             "value": f"{width}x{height}",
             "errors": None
@@ -107,6 +99,7 @@ def validate_image_service(uploaded_file: UploadFile):
     approved = not any(c["status"] == "error" for c in checks)
 
     return {
+        "stage": "validation",
         "approved": approved,
         "summary": "Imagem validada com sucesso" if approved else "Falha na validação da imagem",
         "file_url": file_url,

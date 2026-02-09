@@ -1,13 +1,79 @@
+import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 
-export default function Upload({ onUpload, loading }) {
+export default function Upload({ handleUpload, handleRejected, loading }) {
+  const [files, setFiles] = useState([]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     multiple: true,
-    
-    onDrop: async (acceptedFiles) => {
-      if (acceptedFiles.length > 0) {
-        await onUpload(acceptedFiles);
+    accept: {
+      "image/jpeg": [],
+      "image/jpg": [],
+      "image/png": [],
+    },
+
+    onDrop: (acceptedFiles, fileRejections) => {
+      if (loading) return;
+
+      const accepted = acceptedFiles.map((file) => ({
+            file: file,
+            filename: file.path,
+            stage: "upload",
+            approved: true,
+            summary: "Arquivo aceito para validação",
+            checks: [
+              {
+                name: "Formato",
+                value: "Válido",
+                status: "ok",
+                errors: null,
+              },
+            ],
+      }));
+
+      const rejected = fileRejections.map((rejection) => ({
+            file: rejection.file,
+            filename: rejection.file.path,
+            stage: "upload",
+            approved: false,
+            summary: "Falha na Validação da imagem",
+            checks: [
+              {
+                name: "Formato",
+                value: "Inválido",
+                status: "error",
+                errors: [
+                  {
+                    code: rejection.errors.map((e) => e.message),
+                    message: "O arquivo deve ser uma imagem.",
+                  },
+                ],
+              },
+            ],
+      }));
+      console.log("🔴 REJECTED: ", rejected);
+      console.log("🟢 ACCEPTED:", accepted);
+
+      const normalizedFiles = [...accepted, ...rejected];
+      setFiles((prev) => [...prev, ...normalizedFiles]);
+
+      const validFiles = normalizedFiles
+        .filter((f) => f.checks[0].status === "ok")
+        .map((f) => f.file);
+      console.log("✅ VALID FILES: ", validFiles);
+
+      const invalidFiles = normalizedFiles.filter(
+        (f) => f.checks[0].status === "error",
+      );
+
+      console.log("❌ INVALID FILES: ", invalidFiles);
+
+      if (validFiles.length > 0) {
+        handleUpload(validFiles);
+      }
+
+      if (invalidFiles.length > 0) {
+        handleRejected(invalidFiles);
       }
     },
   });
@@ -72,7 +138,10 @@ export default function Upload({ onUpload, loading }) {
               d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z"
             />
           </svg>
-          <p>Arraste a imagem ou clique para selecionar</p>
+          <p>
+            Arraste uma ou mais imagens ou pastas aqui, ou clique para
+            selecionar
+          </p>
         </>
       )}
     </div>

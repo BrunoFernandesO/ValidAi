@@ -1,18 +1,21 @@
 import React from "react";
 
-export default function ResultsList({ results }) {
+export default function ResultsList({ results, summary }) {
+  console.log("🔵 RESULTS NO RESULTSLIST:", results);
+  console.log("📊 SUMMARY:", summary);
+
+  // Se não tem results, mostra mensagem
   if (!results || results.length === 0) {
-    return <p>Nenhum resultado disponível.</p>;
+    return <div className="text-white text-center p-5">Nenhum resultado para exibir</div>;
   }
 
   return (
     <div className="overflow-x-auto">
-      <div className="p-5 flex justify-between w-full text-gray-1s00 font-medium">
+      <div className="p-5 flex justify-between w-full text-gray-100 font-medium">
         <p>
-          <span className="text-xl">Σ </span> Total : {results.total}
+          <span className="text-xl">Σ </span> Total: {summary.total}
         </p>
         <p className="text-[#66ff00] flex">
-          {" "}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill=""
@@ -27,25 +30,24 @@ export default function ResultsList({ results }) {
               d="m4.5 12.75 6 6 9-13.5"
             />
           </svg>
-          Aprovados : {results.approved}
+          Aprovados: {summary.approved}
         </p>
         <p className="text-[#ff0000] flex">
-          {" "}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            stroke-width="1.5"
+            strokeWidth={1.5}
             stroke="#ff0000"
-            class="size-6"
+            className="size-6"
           >
             <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               d="M6 18 18 6M6 6l12 12"
             />
           </svg>
-          Falhos : {results.failed}
+          Rejeitados: {summary.failed}
         </p>
       </div>
 
@@ -59,28 +61,21 @@ export default function ResultsList({ results }) {
               Nome do Arquivo
             </th>
             <th scope="col" className="px-6 py-3">
-              Tamanho
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Erro no Tamanho
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Resolução
+              Informações
             </th>
             <th scope="col" className="px-6 py-3 rounded-r-md">
-              Erro na Resolução
+              Motivos
             </th>
           </tr>
         </thead>
-        <tbody>
-          {results?.results?.map((image, index) => (
-            <tr
-              key={index}
-              className="border-b dark:border-gray-700 border-gray-200"
-            >
-              <td scope="row" className="px-6 h-18">
-                <p className="text-white text-base font-medium text-[0.95rem]">
-                  {image.approved ? (
+        <tbody className="font-normal text-base text-gray-300">
+          {results.map((item, index) => {
+            console.log(`📦 RENDERIZANDO ITEM ${index}:`, item);
+            
+            return (
+              <tr key={item.filename || index} className="border-b dark:border-gray-700">
+                <td scope="row" className="px-6 h-18">
+                  {item.approved ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill=""
@@ -100,57 +95,60 @@ export default function ResultsList({ results }) {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="1.5"
+                      strokeWidth={1.5}
                       stroke="#ff0000"
-                      class="size-6"
+                      className="size-6"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M6 18 18 6M6 6l12 12"
                       />
                     </svg>
                   )}
-                </p>
-              </td>
-              <td className="flex h-full items-center gap-2 px-6 py-3">
-                <img
-                  src={`http://localhost:8000${image.file_url}`}
-                  alt={image.filename}
-                  className="w-10 rounded-xs mr-3"
-                />
+                </td>
 
-                <p className="text-gray-300 font-normal text-base ">
-                  {image.filename}
-                </p>
-              </td>
+                <td className="flex h-full items-center gap-2 px-6 py-3">
+                  {/* ✅ CORRIGIDO - com fallback */}
 
-              {image.checks.map((check, idx) => (
-                <React.Fragment key={idx}>
-                  <td className="px-6 py-3 font-normal text-base text-gray-900 dark:text-gray-200">
-                    {check.value}
-                  </td>
+                  <p>{item.filename}</p>
+                </td>
 
-                  <td>
-                    {check.errors?.length > 0 ? (
-                      check.errors.map((error, idx) => (
-                        <div
-                          key={idx}
-                          className="px-6 py-3 font-normal text-base text-gray-200"
-                        >
-                          {error.message}
-                        </div>
-                      ))
-                    ) : (
-                      <span className="px-6 py-3 font-normal text-base text-gray-200">
-                        Nenhum erro encontrado.
-                      </span>
-                    )}
-                  </td>
-                </React.Fragment>
-              ))}
-            </tr>
-          ))}
+                <td className="px-6 py-3">
+                  {item.checks?.map((check, idx) => {
+                    console.log(`  📋 CHECK ${idx}:`, check);
+                    return (
+                      <ul key={idx}>
+                        <li>
+                          <span className="text-[0.91em]">{check.name}</span>:{" "}
+                          {check.value || "N/A"}
+                        </li>
+                      </ul>
+                    );
+                  })}
+                </td>
+
+                <td className="px-6 py-3 text-[0.91em]">
+                  {item.checks?.map((check, idx) => {
+                    console.log(`  ⚠️ ERRORS do CHECK ${idx}:`, check.errors);
+                    return (
+                      <React.Fragment key={idx}>
+                        {check.errors?.length > 0 ? (
+                          check.errors.map((error, eidx) => (
+                            <ul key={eidx}>
+                              <li>{error.message}</li>
+                            </ul>
+                          ))
+                        ) : (
+                          <span className="text-green-500">✓ OK</span>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
