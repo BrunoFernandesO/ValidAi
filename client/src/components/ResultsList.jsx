@@ -108,8 +108,12 @@ export default function ResultsList({ results, summary }) {
                   )}
                 </td>
 
-                <td className="flex h-full items-center gap-2 px-6 py-3">
-                  {/* ✅ CORRIGIDO - com fallback */}
+              <td className="flex h-full items-center gap-2 px-6 py-3">
+                <img
+                  src={`http://localhost:8000${item.file_url}`}
+                  alt={item.filename}
+                  className="w-10 rounded-xs mr-3"
+                />
 
                   <p>{item.filename}</p>
                 </td>
