@@ -15,3 +15,15 @@ def sanitize_filename(filename: str) -> str:
     name = re.sub(r"_+", "_", name)
 
     return f"{name}{ext}"
+
+
+def validate_nomenclature(filename: str) -> bool:
+    if not filename:
+        raise ValueError("Filename inválido")
+    
+    name = Path(filename).stem
+    rule = "^\d{4} \d{2} \d{5}#\d$"
+    
+    if re.match(rule, name):
+        return True
+    return False

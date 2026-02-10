@@ -5,6 +5,7 @@ from pathlib import Path
 from fastapi import UploadFile
 from PIL import Image, ImageOps
 from app.shared.validation.rules import sanitize_filename
+from app.shared.validation.rules import validate_nomenclature
 
 
 # from app.shared.validation.rules import validate_rules
@@ -94,6 +95,25 @@ def validate_image_service(uploaded_file: UploadFile):
             "value": f"{width}x{height}",
             "errors": None
         })
+        
+    # Validate nomenclature
+    if not validate_nomenclature(uploaded_file.filename):
+        checks.append({
+            "name": "Nomenclatura",
+            "status": "error",
+            "value": uploaded_file.filename,
+            "errors": [{
+                "code": "invalid_nomeclature",
+                "message": "A nomenclatura não corresponde ao esperado (ex: 9999 99 99999#1.jpg)."
+            }]
+        })
+    else:
+        checks.append({
+            "name": "Nomenclatura",
+            "status": "ok",
+            "value": uploaded_file.filename,
+            "errors": None        
+    })
 
 
     approved = not any(c["status"] == "error" for c in checks)
