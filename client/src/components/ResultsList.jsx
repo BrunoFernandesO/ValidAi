@@ -4,54 +4,53 @@ export default function ResultsList({ results, summary }) {
   console.log("🔵 RESULTS NO RESULTSLIST:", results);
   console.log("📊 SUMMARY:", summary);
 
-  // Se não tem results, mostra mensagem
-  if (!results || results.length === 0) {
-    return <div className="text-white text-center p-5">Nenhum resultado para exibir</div>;
-  }
-
   return (
     <div className="overflow-x-auto">
-      <div className="p-5 flex justify-between w-full text-gray-100 font-medium">
-        <p>
-          <span className="text-xl">Σ </span> Total: {summary.total}
-        </p>
-        <p className="text-[#66ff00] flex">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill=""
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="#66ff00"
-            className="size-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="m4.5 12.75 6 6 9-13.5"
-            />
-          </svg>
-          Aprovados: {summary.approved}
-        </p>
-        <p className="text-[#ff0000] flex">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="#ff0000"
-            className="size-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18 18 6M6 6l12 12"
-            />
-          </svg>
-          Rejeitados: {summary.failed}
-        </p>
-      </div>
+      {summary.total > 0 ? (
+        <div className="p-5 flex justify-between w-full text-gray-100 font-medium">
+          <p>
+            <span className="text-xl">Σ </span> Total: {summary.total}
+          </p>
+          <p className="text-[#66ff00] flex">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill=""
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="#66ff00"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m4.5 12.75 6 6 9-13.5"
+              />
+            </svg>
+            Aprovados: {summary.approved}
+          </p>
+          <p className="text-[#ff0000] flex">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="#ff0000"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18 18 6M6 6l12 12"
+              />
+            </svg>
+            Rejeitados: {summary.failed}
+          </p>
+        </div>
+      ) : (
+        <></>
+      )}
 
-      <table className="w-full h-full text-sm text-left border-collapse overflow-hidden text-gray-500 dark-text-gray-400">
+      <table className={`w-full h-full text-sm text-left border-collapse overflow-hidden text-gray-500 dark-text-gray-400 ${summary.total > 0 ? "" : "hidden"}`}>
         <thead className="text-sm text-black uppercase dark:text-gray-300 bg-gray-50 dark:bg-gray-600/65 h-12">
           <tr>
             <th scope="col" className="px-6 py-3 rounded-l-md">
@@ -71,9 +70,12 @@ export default function ResultsList({ results, summary }) {
         <tbody className="font-normal text-base text-gray-300">
           {results.map((item, index) => {
             console.log(`📦 RENDERIZANDO ITEM ${index}:`, item);
-            
+
             return (
-              <tr key={item.filename || index} className="border-b dark:border-gray-700">
+              <tr
+                key={item.filename || index}
+                className="border-b dark:border-gray-700"
+              >
                 <td scope="row" className="px-6 h-18">
                   {item.approved ? (
                     <svg
@@ -108,12 +110,12 @@ export default function ResultsList({ results, summary }) {
                   )}
                 </td>
 
-              <td className="flex h-full items-center gap-2 px-6 py-3">
-                <img
-                  src={`http://localhost:8000${item.file_url}`}
-                  alt={item.filename}
-                  className="w-10 rounded-xs mr-3"
-                />
+                <td className="flex h-full items-center gap-2 px-6 py-3">
+                  <img
+                    src={`http://localhost:8000${item.file_url}`}
+                    alt={item.filename}
+                    className="w-10 rounded-xs mr-3"
+                  />
 
                   <p>{item.filename}</p>
                 </td>
@@ -144,7 +146,7 @@ export default function ResultsList({ results, summary }) {
                             </ul>
                           ))
                         ) : (
-                          <span className="text-green-500">✓ OK</span>
+                          <></>
                         )}
                       </React.Fragment>
                     );
