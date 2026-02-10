@@ -74,7 +74,7 @@ export default function ResultsList({ results, summary }) {
             return (
               <tr
                 key={item.filename || index}
-                className="border-b dark:border-gray-700"
+                className="border-b-2 dark:border-gray-600/65"
               >
                 <td scope="row" className="px-6 h-18">
                   {item.approved ? (
@@ -113,7 +113,6 @@ export default function ResultsList({ results, summary }) {
                 <td className="flex h-full items-center gap-2 px-6 py-3">
                   <img
                     src={`http://localhost:8000${item.file_url}`}
-                    alt={item.filename}
                     className="w-10 rounded-xs mr-3"
                   />
 

@@ -81,7 +81,7 @@ export default function Upload({ handleUpload, handleRejected, loading }) {
   return (
     <div
       {...getRootProps()}
-      className={`flex flex-col justify-center items-center bg-black/20 outline outline-gray-700/50 backdrop-blur-sm text-gray-400 text-lg xl:text-lg px-8 py-20 rounded-lg border-2 border-dashed border-gray-600 cursor-pointer hover:border-gray-500 hover:bg-black/15 transition-colors text-center ${isDragActive ? "bg-black/25 border-gray-500" : ""}`}
+      className={`flex flex-col justify-center items-center backdrop-blur-xl bg-black/10 outline outline-gray-700/50 text-gray-400 text-lg xl:text-lg px-8 py-16 rounded-2xl border border-white/20 cursor-pointer hover:border-gray-500 hover:bg-black/25 transition-colors text-center ${isDragActive ? "bg-black/25 border-gray-500" : ""}`}
     >
       <input {...getInputProps()} />
 
