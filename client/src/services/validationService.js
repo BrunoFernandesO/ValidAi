@@ -8,7 +8,7 @@ export async function validateImage(files, setProgress, filters) {
         formData.append("files", file);
     })
 
-    if (filters.masSize != null) {
+    if (filters.max_size != null) {
         console.log("Adding max_size to formData: ", filters.max_size);
         formData.append("max_size", filters.max_size);
     }
