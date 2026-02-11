@@ -7,23 +7,18 @@ from PIL import Image, ImageOps
 from app.shared.validation.rules import sanitize_filename
 from app.shared.validation.rules import validate_nomenclature
 
-
-# from app.shared.validation.rules import validate_rules
-
 UPLOAD_DIR = Path("data/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-def validate_image_service(uploaded_file: UploadFile):
-
-   # from app.shared.spreadsheet.reader import read_spreadsheet
-
-    # Configurations
-    #SPREADSHEET_PATH = "data/spreadsheet/product_references.xlsx"
-    MAX_IMAGE_SIZE_BYTES = 5242880  # 5 MB
-    EXPECTED_DIMENSIONS = (1360, 2040)  # width, height
-
-    # Read product references from spreadsheet
-    #product_references = read_spreadsheet(SPREADSHEET_PATH, column="Referencia")
+def validate_image_service(uploaded_file: UploadFile, max_size_mb: int | None, expected_width: int | None, expected_height: int | None, expected_extensions: str | None):
+    
+    f"Esperado: {expected_extensions}, {max_size_mb}mb, {expected_width}x{expected_height}px"
+    
+    if max_size_mb is not None:
+        max_size_bytes = max_size_mb * 1024 * 1024 
+        
+    expected_dimensions = (expected_width, expected_height)
+    
 
     # Save uploaded file
     safe_filename = sanitize_filename(uploaded_file.filename)
@@ -35,66 +30,69 @@ def validate_image_service(uploaded_file: UploadFile):
     
 
     checks = []
-
-    EXPECTED_FORMATS = ".jpg"
-
+    
     # Validate file format
-    if not uploaded_file.filename.lower().endswith(EXPECTED_FORMATS):
-        return {
-            "approved": False,
-            "summary": "Formato inválido",
-            "checks": [{
-            "name": "Formato",
-            "status": "error",
-            "errors": [{
-                "code": "invalid_format",
-                "message": f"O formato do arquivo deve ser {EXPECTED_FORMATS}."
-            }]
-            }]
-        }
+    if expected_extensions:   
+        file_extension = Path(uploaded_file.filename).suffix.lower()
+        allowed_formats = [f.lower().lstrip('.') for f in expected_extensions.split(',')]
+        if not any(file_extension.lstrip('.') == fmt or file_extension == f'.{fmt}' for fmt in allowed_formats):
+            return {
+                "approved": False,
+                "summary": "Formato inválido",
+                "checks": [{
+                "name": "Formato",
+                "status": "error",
+                "errors": [{
+                    "code": "invalid_format",
+                    "message": f"O formato do arquivo deve ser {expected_formats}."
+                }]
+                }]
+            }
     
     # Validate file size
-    file_size = os.path.getsize(file_path)
-    if file_size > MAX_IMAGE_SIZE_BYTES:
-        checks.append({
-            "name": "Tamanho",
-            "status": "error",
-            "value": str(f"{file_size / 1024 / 1024:.2f}") + " mb",
-            "errors": [{
-                "code": "file_too_large",
-                "message": f"O tamanho do arquivo excede o limite de {MAX_IMAGE_SIZE_BYTES / 1024 / 1024} mb."
-            }]
-        })
-    else:
-        checks.append({
-            "name": "Tamanho",
-            "status": "ok",
-            "value": str(f"{file_size / 1024 / 1024:.2f}") + " mb",
-            "errors": None
-        })
+    if max_size_mb:
+        file_size = os.path.getsize(file_path)
+        if file_size > max_size_bytes:
+            checks.append({
+                "name": "Tamanho",
+                "status": "error",
+                "value": str(f"{file_size / 1024 / 1024:.2f}") + " mb",
+                "errors": [{
+                    "code": "file_too_large",
+                    "message": f"O tamanho do arquivo excede o limite de {max_size_mb} mb."
+                }]
+            })
+        else:
+            checks.append({
+                "name": "Tamanho",
+                "status": "ok",
+                "value": str(f"{file_size / 1024 / 1024:.2f}") + " mb",
+                "errors": None
+            })
 
     # Validate image dimensions
-    with Image.open(file_path) as img:
-        img = ImageOps.exif_transpose(img)
-        width, height = img.size
+    if expected_width is not None and expected_height is not None:
+        with Image.open(file_path) as img:
+            img = ImageOps.exif_transpose(img)
+            width, height = img.size
 
-    if (width, height) != EXPECTED_DIMENSIONS:
-        checks.append({
-            "name": "Dimensões",
-            "status": "error",
-            "value": f"{width}x{height}",
-            "errors": [{
-                "code": "invalid_dimensions",
-                "message": f"As dimensões da imagem devem ser {EXPECTED_DIMENSIONS[0]}x{EXPECTED_DIMENSIONS[1]} pixels."
-            }]
-        })
-    else: 
-        checks.append({
-            "name": "Dimensões",
-            "status": "ok",
-            "value": f"{width}x{height}",
-            "errors": None
-        })
+        if (width, height) != expected_dimensions:
+            checks.append({
+                "name": "Dimensões",
+                "status": "error",
+                "value": f"{width}x{height}",
+                "errors": [{
+                    "code": "invalid_dimensions",
+                    "message": f"As dimensões da imagem devem ser {expected_dimensions[0]}x{expected_dimensions[1]} pixels."
+                }]
+            })
+        else: 
+            checks.append({
+                "name": "Dimensões",
+                "status": "ok",
+                "value": f"{width}x{height}",
+                "errors": None
+            })
         
     # Validate nomenclature
     if not validate_nomenclature(uploaded_file.filename):
@@ -103,7 +101,7 @@ def validate_image_service(uploaded_file: UploadFile):
             "status": "error",
             "value": uploaded_file.filename,
             "errors": [{
-                "code": "invalid_nomeclature",
+                "code": "invalid_nomenclature",
                 "message": "A nomenclatura não corresponde ao esperado (ex: 9999 99 99999#1.jpg)."
             }]
         })
@@ -115,7 +113,6 @@ def validate_image_service(uploaded_file: UploadFile):
             "errors": None        
     })
 
-
     approved = not any(c["status"] == "error" for c in checks)
 
     return {
@@ -125,9 +122,3 @@ def validate_image_service(uploaded_file: UploadFile):
         "file_url": file_url,
         "checks": checks
     }
-
-
-    #for reference in product_references:
-    #    for archive in os.listdir(IMAGE_DIR):
-#
- #           if reference in archive:

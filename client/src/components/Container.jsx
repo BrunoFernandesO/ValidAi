@@ -3,9 +3,19 @@ import { validateImage } from "../services/validationService.js";
 import ResultsList from "./ResultsList";
 import Upload from "./Upload.jsx";
 import LoadingBar from "./LoadingBar.jsx";
+import Filter from "./Filter.jsx";
 
 export default function Container() {
   const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [filters, setFilters] = useState({
+    max_size: null,
+    expected_width: null,
+    expected_height: null,
+    expected_extensions: null,
+  });
+
   const summary = useMemo(() => {
     const total = results.length;
     const approved = results.filter((r) => r.approved === true).length;
@@ -14,15 +24,12 @@ export default function Container() {
     return { total, approved, failed };
   }, [results]);
 
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-
   const handleUpload = async (validFiles) => {
     setLoading(true);
     setResults([]);
 
     try {
-      const data = await validateImage(validFiles, setProgress);
+      const data = await validateImage(validFiles, setProgress, filters);
       console.log("🟢 BACKEND: ", data.results);
 
       setResults((prev) => [...prev, ...data.results]);
@@ -33,7 +40,7 @@ export default function Container() {
     }
   };
 
-  const handleReject = (rejectedFiles) => {
+  const handleRejected = (rejectedFiles) => {
     setResults([]);
 
     try {
@@ -43,13 +50,27 @@ export default function Container() {
     }
   };
 
+  const handleFilters = (event) => {
+    console.log("🔥 XAAAMBRAAA");
+    const { name, value } = event.target;
+
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value === "" ?  null : value,
+    }))
+
+    console.log("🟠 FILTERS: ", filters);
+  };
+
   console.log("🔵 STATE FINAL: ", results);
 
   return (
     <div className="bg-gray-800/40 p-5 rounded-lg outline outline-gray-700/50 backdrop-blur-sm text-white gap-8 flex flex-col">
+      <Filter handleFilters={handleFilters} />
+
       <Upload
         handleUpload={handleUpload}
-        handleRejected={handleReject}
+        handleRejected={handleRejected}
         loading={loading}
       />
 
