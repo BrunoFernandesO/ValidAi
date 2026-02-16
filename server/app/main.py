@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 app = FastAPI()
 
 app.mount(
-    "/uploads",
+    "/api/uploads",
     StaticFiles(directory="data/uploads"),
     name="uploads"
 )

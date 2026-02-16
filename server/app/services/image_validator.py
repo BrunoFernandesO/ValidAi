@@ -10,7 +10,7 @@ from app.shared.validation.rules import validate_nomenclature
 UPLOAD_DIR = Path("data/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-def validate_image_service(uploaded_file: UploadFile, max_size_mb: int | None, expected_width: int | None, expected_height: int | None, expected_extensions: str | None):
+def validate_image_service(uploaded_file: UploadFile, max_size_mb: float | None, expected_width: int | None, expected_height: int | None, expected_extensions: str | None):
     
     f"Esperado: {expected_extensions}, {max_size_mb}mb, {expected_width}x{expected_height}px"
     
@@ -44,7 +44,7 @@ def validate_image_service(uploaded_file: UploadFile, max_size_mb: int | None, e
                 "status": "error",
                 "errors": [{
                     "code": "invalid_format",
-                    "message": f"O formato do arquivo deve ser {expected_formats}."
+                    "message": f"O formato do arquivo deve ser {expected_extensions}."
                 }]
                 }]
             }
