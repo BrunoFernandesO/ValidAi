@@ -113,6 +113,7 @@ export default function ResultsList({ results, summary }) {
                 <td className="flex h-full items-center gap-2 px-6 py-3">
                   <img
                     src={`http://localhost:8000${item.file_url}`}
+                    src={`https://validai.plconfeccoes.com.br/api${item.file_url}`}
                     className="w-10 rounded-xs mr-3"
                   />
 

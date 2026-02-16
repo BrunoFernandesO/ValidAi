@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { validateImage } from "../services/validationService.js";
+import { uploadImage } from "../services/validationService.js";
 import ResultsList from "./ResultsList";
 import Upload from "./Upload.jsx";
 import LoadingBar from "./LoadingBar.jsx";
@@ -29,10 +29,10 @@ export default function Container() {
     setResults([]);
 
     try {
-      const data = await validateImage(validFiles, setProgress, filters);
       console.log("🟢 BACKEND: ", data.results);
+      const data = await uploadImage(validFiles, setProgress, filters);
 
-      setResults((prev) => [...prev, ...data.results]);
+      setResults((prev) => [...prev, ...data]);
     } catch (error) {
       console.error("handleUpload error: ", error);
     } finally {
