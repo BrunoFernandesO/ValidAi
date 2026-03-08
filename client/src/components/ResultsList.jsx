@@ -5,6 +5,17 @@ function buildApiUrl(path) {
     return null;
   }
 
+  return `${import.meta.env.VITE_API_URL}${path}`;
+}
+
+function resolvePreviewSrc(item) {
+  if (!item.file_url) {
+    return null;
+  }
+
+  return buildApiUrl(item.file_url);
+}
+
   const baseUrl = import.meta.env.VITE_API_URL || "";
   return `${baseUrl}${path}`;
 }
@@ -16,6 +27,11 @@ function findCheck(item, checkName) {
 export default function ResultsList({ results, summary, batchDownloadUrl }) {
   const batchDownloadHref = buildApiUrl(batchDownloadUrl);
 
+function findCheck(item, checkName) {
+  return item.checks?.find((check) => check.name === checkName);
+}
+
+export default function ResultsList({ results, summary }) {
   return (
     <div className="overflow-x-auto">
       {summary.total > 0 ? (

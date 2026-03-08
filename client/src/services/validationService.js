@@ -5,10 +5,16 @@ export async function uploadImage(files, setProgress, filters) {
     baseURL: import.meta.env.VITE_API_URL,
   });
 
+const fileArray = Array.from(files);
+const totalFiles = fileArray.length;
+
+let completedFiles = 0;
+let batchDownloadUrl = null;
+setProgress(0);
+
+async function uploadSingleFile(file) {
   const formData = new FormData();
-  for (const file of Array.from(files)) {
-    formData.append("files", file);
-  }
+  formData.append("files", file);
 
   if (filters.max_size != null) {
     formData.append("max_size", filters.max_size);
@@ -23,21 +29,56 @@ export async function uploadImage(files, setProgress, filters) {
     formData.append("expected_extensions", filters.expected_extensions);
   }
 
-  const response = await api.post("/validate", formData, {
+  return api.post("/validate", formData, {
     onUploadProgress: (event) => {
       if (!event.total) {
         return;
       }
 
-      const totalPercent = (event.loaded / event.total) * 100;
+      const percent = event.loaded / event.total;
+      const totalPercent = ((completedFiles + percent) / totalFiles) * 100;
       setProgress(Math.round(totalPercent));
     },
   });
-
-  setProgress(100);
-
-  return {
-    results: response.data.results ?? [],
-    batchDownloadUrl: response.data.batch_download_url ?? null,
-  };
 }
+
+const uploadQueue = [...fileArray];
+const results = [];
+
+async function worker() {
+  while (uploadQueue.length > 0) {
+    const file = uploadQueue.shift();
+
+    try {
+      const response = await uploadSingleFile(file);
+      results.push(...(response.data.results ?? []));
+
+      if (response.data.batch_download_url) {
+        batchDownloadUrl = response.data.batch_download_url;
+      }
+    } catch (error) {
+      console.error("Error on file:", file.name, error);
+      results.push({
+        filename: file.name,
+        approved: false,
+        summary: "Erro no upload",
+        checks: [],
+      });
+    }
+
+    completedFiles += 1;
+    setProgress(Math.round((completedFiles / totalFiles) * 100));
+  }
+}
+
+const workers = [];
+for (let i = 0; i < MAX_CONCURRENT_UPLOADS; i += 1) {
+  workers.push(worker());
+}
+
+await Promise.all(workers);
+
+return {
+  results,
+  batchDownloadUrl,
+};

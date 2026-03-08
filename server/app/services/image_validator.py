@@ -17,6 +17,10 @@ JPEG_EXTENSIONS = {".jpg", ".jpeg"}
 
 
 def _normalize_expected_extensions(expected_extensions: str | None) -> set[str]:
+    """Normalize CSV extension list (e.g. 'jpg, png') into {'.jpg', '.png'}.
+
+    Empty values are ignored.
+    """
     if expected_extensions is None:
         return set()
 
@@ -28,7 +32,12 @@ def _normalize_expected_extensions(expected_extensions: str | None) -> set[str]:
     return normalized
 
 
-def _save_canvas(canvas: Image.Image, output_path: Path, source_extension: str) -> None:
+def _save_canvas(
+    canvas: Image.Image,
+    output_path: Path,
+    source_extension: str,
+) -> None:
+    """Persist adjusted image with quality settings suitable for previews."""
     if source_extension in JPEG_EXTENSIONS:
         canvas.save(output_path, format="JPEG", quality=92, optimize=True)
         return
@@ -92,6 +101,7 @@ def validate_image_service(
     output_file_path = original_file_path
     requested_resize = expected_width is not None or expected_height is not None
 
+    # Format validation
     allowed_extensions = _normalize_expected_extensions(expected_extensions)
     uploaded_extension = Path(uploaded_file.filename).suffix.lower()
 
