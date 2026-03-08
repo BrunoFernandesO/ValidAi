@@ -27,12 +27,14 @@ export default function Container() {
   const handleUpload = async (validFiles) => {
     setLoading(true);
     setResults([]);
-
+    setProgress(0);
+  
     try {
-      console.log("🟢 BACKEND: ", data.results);
       const data = await uploadImage(validFiles, setProgress, filters);
-
-      setResults((prev) => [...prev, ...data]);
+      console.log("M- BACKEND:", data);
+    
+      const finalResults = data?.results ?? data ?? [];
+      setResults((prev) => [...prev, ...finalResults]);
     } catch (error) {
       console.error("handleUpload error: ", error);
     } finally {
