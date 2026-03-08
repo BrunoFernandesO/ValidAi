@@ -21,3 +21,6 @@ Thumbs.db
 # Build
 dist/
 build/
+
+# uploads from client
+server/data/uploads/
