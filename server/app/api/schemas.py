@@ -1,15 +1,19 @@
 from typing import List, Optional
+
 from pydantic import BaseModel
+
 
 class ValidationError(BaseModel):
     code: str
     message: str
 
+
 class ValidationCheck(BaseModel):
     name: str
     value: Optional[str] = None
-    status: str # ok | error
+    status: str  # ok | error
     errors: Optional[List[ValidationError]] = None
+
 
 class ValidationResult(BaseModel):
     filename: str
@@ -17,7 +21,10 @@ class ValidationResult(BaseModel):
     stage: str
     summary: str
     file_url: str
+    download_url: str
     checks: List[ValidationCheck]
+
 
 class ValidationResponse(BaseModel):
     results: List[ValidationResult]
+    batch_download_url: Optional[str] = None

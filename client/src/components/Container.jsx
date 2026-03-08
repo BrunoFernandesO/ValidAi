@@ -1,12 +1,14 @@
-import { useState, useMemo } from "react";
-import { uploadImage } from "../services/validationService.js";
+import { useMemo, useState } from "react";
+
+import Filter from "./Filter.jsx";
+import LoadingBar from "./LoadingBar.jsx";
 import ResultsList from "./ResultsList";
 import Upload from "./Upload.jsx";
-import LoadingBar from "./LoadingBar.jsx";
-import Filter from "./Filter.jsx";
+import { uploadImage } from "../services/validationService.js";
 
 export default function Container() {
   const [results, setResults] = useState([]);
+  const [batchDownloadUrl, setBatchDownloadUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [filters, setFilters] = useState({
@@ -18,7 +20,7 @@ export default function Container() {
 
   const summary = useMemo(() => {
     const total = results.length;
-    const approved = results.filter((r) => r.approved === true).length;
+    const approved = results.filter((result) => result.approved === true).length;
     const failed = total - approved;
 
     return { total, approved, failed };
@@ -27,44 +29,33 @@ export default function Container() {
   const handleUpload = async (validFiles) => {
     setLoading(true);
     setResults([]);
+    setBatchDownloadUrl(null);
     setProgress(0);
-  
+
     try {
-      const data = await uploadImage(validFiles, setProgress, filters);
-      console.log("M- BACKEND:", data);
-    
-      const finalResults = data?.results ?? data ?? [];
-      setResults((prev) => [...prev, ...finalResults]);
+      const response = await uploadImage(validFiles, setProgress, filters);
+      setResults(response.results);
+      setBatchDownloadUrl(response.batchDownloadUrl);
     } catch (error) {
-      console.error("handleUpload error: ", error);
+      console.error("handleUpload error:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleRejected = (rejectedFiles) => {
-    setResults([]);
-
-    try {
-      setResults((prev) => [...prev, ...rejectedFiles]);
-    } catch (error) {
-      console.error("handleReject error: ", error);
-    }
+    setBatchDownloadUrl(null);
+    setResults(rejectedFiles);
   };
 
   const handleFilters = (event) => {
-    console.log("🔥 XAAAMBRAAA");
     const { name, value } = event.target;
 
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value === "" ?  null : value,
-    }))
-
-    console.log("🟠 FILTERS: ", filters);
+    setFilters((previous) => ({
+      ...previous,
+      [name]: value.trim() === "" ? null : value.trim(),
+    }));
   };
-
-  console.log("🔵 STATE FINAL: ", results);
 
   return (
     <div className="bg-gray-800/40 p-5 rounded-lg outline outline-gray-700/50 backdrop-blur-sm text-white gap-8 flex flex-col">
@@ -78,7 +69,13 @@ export default function Container() {
 
       <LoadingBar value={progress} />
 
-      {results && <ResultsList results={results} summary={summary} />}
+      {results && (
+        <ResultsList
+          results={results}
+          summary={summary}
+          batchDownloadUrl={batchDownloadUrl}
+        />
+      )}
     </div>
   );
 }

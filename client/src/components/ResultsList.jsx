@@ -1,13 +1,25 @@
 import React from "react";
 
-export default function ResultsList({ results, summary }) {
-  console.log("🔵 RESULTS NO RESULTSLIST:", results);
-  console.log("📊 SUMMARY:", summary);
+function buildApiUrl(path) {
+  if (!path) {
+    return null;
+  }
+
+  const baseUrl = import.meta.env.VITE_API_URL || "";
+  return `${baseUrl}${path}`;
+}
+
+function findCheck(item, checkName) {
+  return item.checks?.find((check) => check.name === checkName);
+}
+
+export default function ResultsList({ results, summary, batchDownloadUrl }) {
+  const batchDownloadHref = buildApiUrl(batchDownloadUrl);
 
   return (
     <div className="overflow-x-auto">
       {summary.total > 0 ? (
-        <div className="p-5 flex justify-between w-full text-gray-100 font-medium">
+        <div className="p-5 flex justify-between w-full text-gray-100 font-medium items-center">
           <p>
             <span className="text-xl">Σ </span> Total: {summary.total}
           </p>
@@ -45,12 +57,21 @@ export default function ResultsList({ results, summary }) {
             </svg>
             Rejeitados: {summary.failed}
           </p>
+          {batchDownloadHref ? (
+            <a
+              href={batchDownloadHref}
+              download
+              className="bg-sky-600 hover:bg-sky-500 text-white text-xs px-3 py-2 rounded-md"
+            >
+              Download all adjusted images (.zip)
+            </a>
+          ) : null}
         </div>
-      ) : (
-        <></>
-      )}
+      ) : null}
 
-      <table className={`w-full h-full text-sm text-left border-collapse overflow-hidden text-gray-500 dark-text-gray-400 ${summary.total > 0 ? "" : "hidden"}`}>
+      <table
+        className={`w-full h-full text-sm text-left border-collapse overflow-hidden text-gray-500 dark-text-gray-400 ${summary.total > 0 ? "" : "hidden"}`}
+      >
         <thead className="text-sm text-black uppercase dark:text-gray-300 bg-gray-50 dark:bg-gray-600/65 h-12">
           <tr>
             <th scope="col" className="px-6 py-3 rounded-l-md">
@@ -67,13 +88,17 @@ export default function ResultsList({ results, summary }) {
             </th>
           </tr>
         </thead>
+
         <tbody className="font-normal text-base text-gray-300">
           {results.map((item, index) => {
-            console.log(`📦 RENDERIZANDO ITEM ${index}:`, item);
+            const autoFitCheck = findCheck(item, "Ajuste automático");
+            const dimensionsCheck = findCheck(item, "Dimensões");
+            const previewSrc = buildApiUrl(item.file_url);
+            const downloadHref = buildApiUrl(item.download_url ?? item.file_url);
 
             return (
               <tr
-                key={item.filename || index}
+                key={`${item.filename}-${index}`}
                 className="border-b-2 dark:border-gray-600/65"
               >
                 <td scope="row" className="px-6 h-18">
@@ -110,46 +135,54 @@ export default function ResultsList({ results, summary }) {
                   )}
                 </td>
 
-                <td className="flex h-full items-center gap-2 px-6 py-3">
-                  <img
-                    src={`${import.meta.env.VITE_API_URL}${item.file_url}`}
-                    className="w-10 rounded-xs mr-3"
-                  />
+                <td className="h-full gap-2 px-6 py-3">
+                  <div className="flex items-center">
+                    {previewSrc ? (
+                      <img src={previewSrc} className="w-10 rounded-xs mr-3" />
+                    ) : null}
+                    <p>{item.filename}</p>
+                  </div>
 
-                  <p>{item.filename}</p>
+                  {autoFitCheck?.status === "ok" ? (
+                    <p className="text-xs mt-2 text-sky-300">Auto-fit com padding branco aplicado.</p>
+                  ) : null}
+                  {dimensionsCheck ? (
+                    <p className="text-xs mt-1 text-gray-400">{dimensionsCheck.value}</p>
+                  ) : null}
+
+                  {downloadHref ? (
+                    <a
+                      href={downloadHref}
+                      download
+                      className="inline-block mt-2 text-xs bg-white/10 hover:bg-white/20 px-2 py-1 rounded"
+                    >
+                      Download adjusted image
+                    </a>
+                  ) : null}
                 </td>
 
                 <td className="px-6 py-3">
-                  {item.checks?.map((check, idx) => {
-                    console.log(`  📋 CHECK ${idx}:`, check);
-                    return (
-                      <ul key={idx}>
-                        <li>
-                          <span className="text-[0.91em]">{check.name}</span>:{" "}
-                          {check.value || "N/A"}
-                        </li>
-                      </ul>
-                    );
-                  })}
+                  {item.checks?.map((check, idx) => (
+                    <ul key={idx}>
+                      <li>
+                        <span className="text-[0.91em]">{check.name}</span>: {check.value || "N/A"}
+                      </li>
+                    </ul>
+                  ))}
                 </td>
 
                 <td className="px-6 py-3 text-[0.91em]">
-                  {item.checks?.map((check, idx) => {
-                    console.log(`  ⚠️ ERRORS do CHECK ${idx}:`, check.errors);
-                    return (
-                      <React.Fragment key={idx}>
-                        {check.errors?.length > 0 ? (
-                          check.errors.map((error, eidx) => (
+                  {item.checks?.map((check, idx) => (
+                    <React.Fragment key={idx}>
+                      {check.errors?.length > 0
+                        ? check.errors.map((error, eidx) => (
                             <ul key={eidx}>
                               <li>{error.message}</li>
                             </ul>
                           ))
-                        ) : (
-                          <></>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
+                        : null}
+                    </React.Fragment>
+                  ))}
                 </td>
               </tr>
             );
