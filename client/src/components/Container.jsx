@@ -8,6 +8,7 @@ import { uploadImage } from "../services/validationService.js";
 
 export default function Container() {
   const [results, setResults] = useState([]);
+  const [batchDownloadUrl, setBatchDownloadUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [filters, setFilters] = useState({
@@ -28,11 +29,13 @@ export default function Container() {
   const handleUpload = async (validFiles) => {
     setLoading(true);
     setResults([]);
+    setBatchDownloadUrl(null);
     setProgress(0);
 
     try {
-      const finalResults = await uploadImage(validFiles, setProgress, filters);
-      setResults((previous) => [...previous, ...finalResults]);
+      const response = await uploadImage(validFiles, setProgress, filters);
+      setResults(response.results);
+      setBatchDownloadUrl(response.batchDownloadUrl);
     } catch (error) {
       console.error("handleUpload error:", error);
     } finally {
@@ -41,6 +44,7 @@ export default function Container() {
   };
 
   const handleRejected = (rejectedFiles) => {
+    setBatchDownloadUrl(null);
     setResults(rejectedFiles);
   };
 
@@ -65,7 +69,13 @@ export default function Container() {
 
       <LoadingBar value={progress} />
 
-      {results && <ResultsList results={results} summary={summary} />}
+      {results && (
+        <ResultsList
+          results={results}
+          summary={summary}
+          batchDownloadUrl={batchDownloadUrl}
+        />
+      )}
     </div>
   );
 }

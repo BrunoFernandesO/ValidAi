@@ -1,13 +1,31 @@
 import React from "react";
 
+function buildApiUrl(path) {
+  if (!path) {
+    return null;
+  }
+
+  return `${import.meta.env.VITE_API_URL}${path}`;
+}
+
 function resolvePreviewSrc(item) {
   if (!item.file_url) {
     return null;
   }
 
-  const baseUrl = import.meta.env.VITE_API_URL || "";
-  return `${baseUrl}${item.file_url}`;
+  return buildApiUrl(item.file_url);
 }
+
+  const baseUrl = import.meta.env.VITE_API_URL || "";
+  return `${baseUrl}${path}`;
+}
+
+function findCheck(item, checkName) {
+  return item.checks?.find((check) => check.name === checkName);
+}
+
+export default function ResultsList({ results, summary, batchDownloadUrl }) {
+  const batchDownloadHref = buildApiUrl(batchDownloadUrl);
 
 function findCheck(item, checkName) {
   return item.checks?.find((check) => check.name === checkName);
@@ -17,7 +35,7 @@ export default function ResultsList({ results, summary }) {
   return (
     <div className="overflow-x-auto">
       {summary.total > 0 ? (
-        <div className="p-5 flex justify-between w-full text-gray-100 font-medium">
+        <div className="p-5 flex justify-between w-full text-gray-100 font-medium items-center">
           <p>
             <span className="text-xl">Σ </span> Total: {summary.total}
           </p>
@@ -55,6 +73,15 @@ export default function ResultsList({ results, summary }) {
             </svg>
             Rejeitados: {summary.failed}
           </p>
+          {batchDownloadHref ? (
+            <a
+              href={batchDownloadHref}
+              download
+              className="bg-sky-600 hover:bg-sky-500 text-white text-xs px-3 py-2 rounded-md"
+            >
+              Download all adjusted images (.zip)
+            </a>
+          ) : null}
         </div>
       ) : null}
 
@@ -82,7 +109,8 @@ export default function ResultsList({ results, summary }) {
           {results.map((item, index) => {
             const autoFitCheck = findCheck(item, "Ajuste automático");
             const dimensionsCheck = findCheck(item, "Dimensões");
-            const previewSrc = resolvePreviewSrc(item);
+            const previewSrc = buildApiUrl(item.file_url);
+            const downloadHref = buildApiUrl(item.download_url ?? item.file_url);
 
             return (
               <tr
@@ -136,6 +164,16 @@ export default function ResultsList({ results, summary }) {
                   ) : null}
                   {dimensionsCheck ? (
                     <p className="text-xs mt-1 text-gray-400">{dimensionsCheck.value}</p>
+                  ) : null}
+
+                  {downloadHref ? (
+                    <a
+                      href={downloadHref}
+                      download
+                      className="inline-block mt-2 text-xs bg-white/10 hover:bg-white/20 px-2 py-1 rounded"
+                    >
+                      Download adjusted image
+                    </a>
                   ) : null}
                 </td>
 

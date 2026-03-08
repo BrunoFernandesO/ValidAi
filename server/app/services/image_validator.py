@@ -10,6 +10,9 @@ from app.shared.validation.rules import sanitize_filename, validate_nomenclature
 UPLOAD_DIR = Path("data/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
+BATCH_DIR = Path("data/batches")
+BATCH_DIR.mkdir(parents=True, exist_ok=True)
+
 JPEG_EXTENSIONS = {".jpg", ".jpeg"}
 
 
@@ -48,11 +51,6 @@ def _resize_with_white_padding(
     target_width: int,
     target_height: int,
 ) -> dict:
-    """Fit image into a fixed white canvas while preserving aspect ratio.
-
-    The image is never stretched. Large images are downscaled with LANCZOS and
-    smaller images are centered on the target white canvas.
-    """
     if target_width <= 0 or target_height <= 0:
         raise ValueError("Target dimensions must be greater than zero.")
 
@@ -100,7 +98,7 @@ def validate_image_service(
     with open(original_file_path, "wb") as buffer:
         shutil.copyfileobj(uploaded_file.file, buffer)
 
-    file_path_for_preview = original_file_path
+    output_file_path = original_file_path
     requested_resize = expected_width is not None or expected_height is not None
 
     # Format validation
@@ -132,7 +130,6 @@ def validate_image_service(
                 }
             )
 
-    # Automatic fit (only when both dimensions are provided)
     if requested_resize and (expected_width is None or expected_height is None):
         checks.append(
             {
@@ -172,7 +169,7 @@ def validate_image_service(
                 target_width=expected_width,
                 target_height=expected_height,
             )
-            file_path_for_preview = adjusted_output_path
+            output_file_path = adjusted_output_path
 
             original_width, original_height = resize_metadata["original_size"]
             fitted_width, fitted_height = resize_metadata["fitted_size"]
@@ -199,8 +196,6 @@ def validate_image_service(
                 }
             )
 
-    # File size validation:
-    # Product intent: max file size validates original upload constraints.
     if max_size_mb is not None:
         max_size_bytes = max_size_mb * 1024 * 1024
         original_size_bytes = os.path.getsize(original_file_path)
@@ -230,8 +225,8 @@ def validate_image_service(
                 }
             )
 
-        if file_path_for_preview != original_file_path:
-            adjusted_size_bytes = os.path.getsize(file_path_for_preview)
+        if output_file_path != original_file_path:
+            adjusted_size_bytes = os.path.getsize(output_file_path)
             adjusted_size_mb = adjusted_size_bytes / 1024 / 1024
             checks.append(
                 {
@@ -242,7 +237,6 @@ def validate_image_service(
                 }
             )
 
-    # Nomenclature validation
     if not validate_nomenclature(uploaded_file.filename):
         checks.append(
             {
@@ -268,11 +262,15 @@ def validate_image_service(
         )
 
     approved = not any(check["status"] == "error" for check in checks)
+    output_file_url = f"/uploads/{output_file_path.name}"
 
     return {
         "stage": "validation",
         "approved": approved,
         "summary": "Imagem validada com sucesso" if approved else "Falha na validação da imagem",
-        "file_url": f"/uploads/{file_path_for_preview.name}",
+        "file_url": output_file_url,
+        "download_url": output_file_url,
+        "is_adjusted_output": output_file_path != original_file_path,
+        "output_filename": output_file_path.name,
         "checks": checks,
     }

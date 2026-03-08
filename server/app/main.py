@@ -1,14 +1,20 @@
 from fastapi import FastAPI
-from app.api.routes import router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
+from app.api.routes import router
 
 app = FastAPI()
 
 app.mount(
     "/api/uploads",
     StaticFiles(directory="data/uploads"),
-    name="uploads"
+    name="uploads",
+)
+app.mount(
+    "/api/batches",
+    StaticFiles(directory="data/batches"),
+    name="batches",
 )
 
 app.add_middleware(
