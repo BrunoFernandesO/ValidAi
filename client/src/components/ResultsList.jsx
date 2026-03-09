@@ -16,22 +16,12 @@ function resolvePreviewSrc(item) {
   return buildApiUrl(item.file_url);
 }
 
-  const baseUrl = import.meta.env.VITE_API_URL || "";
-  return `${baseUrl}${path}`;
-}
-
 function findCheck(item, checkName) {
   return item.checks?.find((check) => check.name === checkName);
 }
 
 export default function ResultsList({ results, summary, batchDownloadUrl }) {
   const batchDownloadHref = buildApiUrl(batchDownloadUrl);
-
-function findCheck(item, checkName) {
-  return item.checks?.find((check) => check.name === checkName);
-}
-
-export default function ResultsList({ results, summary }) {
   return (
     <div className="overflow-x-auto">
       {summary.total > 0 ? (
@@ -86,7 +76,7 @@ export default function ResultsList({ results, summary }) {
       ) : null}
 
       <table
-        className={`w-full h-full text-sm text-left border-collapse overflow-hidden text-gray-500 dark-text-gray-400 ${summary.total > 0 ? "" : "hidden"}`}
+        className={`w-full h-full text-sm text-left border-collapse overflow-hidden text-gray-500 dark:text-gray-400 ${summary.total > 0 ? "" : "hidden"}`}
       >
         <thead className="text-sm text-black uppercase dark:text-gray-300 bg-gray-50 dark:bg-gray-600/65 h-12">
           <tr>
@@ -178,27 +168,23 @@ export default function ResultsList({ results, summary }) {
                 </td>
 
                 <td className="px-6 py-3">
-                  {item.checks?.map((check, idx) => (
-                    <ul key={idx}>
-                      <li>
+                  <ul>
+                    {item.checks?.map((check, idx) => (
+                      <li key={idx}>
                         <span className="text-[0.91em]">{check.name}</span>: {check.value || "N/A"}
                       </li>
-                    </ul>
-                  ))}
+                    ))}
+                  </ul>
                 </td>
 
                 <td className="px-6 py-3 text-[0.91em]">
-                  {item.checks?.map((check, idx) => (
-                    <React.Fragment key={idx}>
-                      {check.errors?.length > 0
-                        ? check.errors.map((error, eidx) => (
-                            <ul key={eidx}>
-                              <li>{error.message}</li>
-                            </ul>
-                          ))
-                        : null}
-                    </React.Fragment>
-                  ))}
+                  <ul>
+                    {item.checks?.flatMap((check, idx) =>
+                      check.errors?.map((error, eidx) => (
+                        <li key={`${idx}-${eidx}`}>{error.message}</li>
+                      )) || []
+                    )}
+                  </ul>
                 </td>
               </tr>
             );
